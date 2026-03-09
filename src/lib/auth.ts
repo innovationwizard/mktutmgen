@@ -5,43 +5,29 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export const authOptions: NextAuthOptions = {
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
-  pages: {
-    signIn: "/login",
-  },
+  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
+  pages: { signIn: "/login" },
   providers: [
     CredentialsProvider({
       name: "credentials",
       credentials: {
-        email: { label: "Correo", type: "email" },
+        username: { label: "Usuario", type: "text" },
         password: { label: "Contraseña", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.username || !credentials?.password) return null;
 
-        const input = credentials.email.trim();
+        const input = credentials.username.trim();
         const user = input.includes("@")
           ? await prisma.user.findUnique({ where: { email: input } })
-          : await prisma.user.findFirst({ where: { name: { equals: input, mode: "insensitive" } } });
+          : await prisma.user.findFirst({
+              where: { name: { equals: input, mode: "insensitive" } },
+            });
 
-        if (!user) return null;
+        if (!user || !(await compare(credentials.password, user.passwordHash)))
+          return null;
 
-        const isValid = await compare(
-          credentials.password,
-          user.passwordHash
-        );
-
-        if (!isValid) return null;
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        };
+        return { id: user.id, email: user.email, name: user.name, role: user.role };
       },
     }),
   ],
@@ -63,21 +49,16 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-/**
- * Get the authenticated session or return a 401 response.
- * Use in API routes: const session = await requireAuth(); if (session instanceof NextResponse) return session;
- */
 export async function requireAuth() {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  return session as typeof session & { user: { id: string; role: string; email: string; name: string } };
+  return session as typeof session & {
+    user: { id: string; role: string; email: string; name: string };
+  };
 }
 
-/**
- * Require ADMIN role or return 403.
- */
 export async function requireAdmin() {
   const session = await requireAuth();
   if (session instanceof NextResponse) return session;
