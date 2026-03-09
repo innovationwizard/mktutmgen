@@ -39,7 +39,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-grid opacity-20" />
         <div className="relative z-10 flex flex-col items-center gap-8 px-12">
           <Image
-            src="/grupo_orion_logo.png"
+            src="/grupo_orion_logo_crop.png"
             alt="Grupo Orión"
             width={200}
             height={200}
@@ -63,7 +63,7 @@ export default function LoginPage() {
           {/* Mobile logo */}
           <div className="mb-8 flex justify-center lg:hidden">
             <Image
-              src="/grupo_orion_logo.png"
+              src="/grupo_orion_logo_crop.png"
               alt="Grupo Orión"
               width={80}
               height={80}

@@ -9,6 +9,20 @@ export const metadata: Metadata = {
   title: "UTM Generator — Grupo Orión",
   description:
     "Generador de marcación UTM y convenciones de nombrado para campañas digitales.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  openGraph: {
+    title: "UTM Generator — Grupo Orión",
+    description:
+      "Generador de marcación UTM y convenciones de nombrado para campañas digitales.",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
 };
 
 export default function RootLayout({

@@ -84,7 +84,7 @@ export default function DashboardLayout({
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-white/10 px-5">
         <Image
-          src="/grupo_orion_logo.png"
+          src="/grupo_orion_logo_crop.png"
           alt="Grupo Orión"
           width={32}
           height={32}
