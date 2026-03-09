@@ -247,7 +247,7 @@ async function main() {
   // ── Segmentation Types ──
   const segmentations = [
     "intereses", "lookalike", "abierta", "remarketing",
-    "audiencias", "temas", "keywords",
+    "audiencias", "temas", "keywords", "prospecting",
   ];
 
   for (const [i, name] of segmentations.entries()) {
