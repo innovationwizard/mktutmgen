@@ -1,7 +1,9 @@
-import { type NextAuthOptions, getServerSession } from "next-auth";
+import { type NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { getToken } from "next-auth/jwt";
 import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { type NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 export const authOptions: NextAuthOptions = {
@@ -49,20 +51,25 @@ export const authOptions: NextAuthOptions = {
   },
 };
 
-export async function requireAuth() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
+export async function requireAuth(req: NextRequest) {
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  if (!token) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  return session as typeof session & {
-    user: { id: string; role: string; email: string; name: string };
+  return {
+    user: {
+      id: token.id as string,
+      role: token.role as string,
+      email: token.email as string,
+      name: token.name as string,
+    },
   };
 }
 
-export async function requireAdmin() {
-  const session = await requireAuth();
+export async function requireAdmin(req: NextRequest) {
+  const session = await requireAuth(req);
   if (session instanceof NextResponse) return session;
-  if ((session.user as { role: string }).role !== "ADMIN") {
+  if (session.user.role !== "ADMIN") {
     return NextResponse.json({ error: "Acceso denegado" }, { status: 403 });
   }
   return session;

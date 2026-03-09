@@ -5,7 +5,7 @@ import { requireAuth } from "@/lib/auth";
 // POST: Create or update a QA review
 export async function POST(request: NextRequest) {
   try {
-    const session = await requireAuth();
+    const session = await requireAuth(request);
     if (session instanceof NextResponse) return session;
     const body = await request.json();
     const { campaignId, ...qaData } = body;
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
 // GET: Fetch QA review for a specific campaign
 export async function GET(request: NextRequest) {
   try {
-    const session = await requireAuth();
+    const session = await requireAuth(request);
     if (session instanceof NextResponse) return session;
 
     const { searchParams } = new URL(request.url);

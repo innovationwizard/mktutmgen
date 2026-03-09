@@ -3,11 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { generateNaming } from "@/lib/naming";
 import { requireAuth } from "@/lib/auth";
 
-// GET: List all campaigns
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await requireAuth();
+    const session = await requireAuth(request);
     if (session instanceof NextResponse) return session;
+
     const campaigns = await prisma.campaign.findMany({
       orderBy: { createdAt: "desc" },
       include: {
@@ -30,14 +30,13 @@ export async function GET() {
   }
 }
 
-// POST: Create a new campaign
 export async function POST(request: NextRequest) {
   try {
-    const session = await requireAuth();
+    const session = await requireAuth(request);
     if (session instanceof NextResponse) return session;
+
     const body = await request.json();
 
-    // Resolve abbreviations from IDs
     const [industry, country, company, brand, platform, format, buyType] =
       await Promise.all([
         prisma.industry.findUnique({ where: { id: body.industryId } }),
@@ -53,7 +52,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid reference data" }, { status: 400 });
     }
 
-    // Generate naming
     const naming = generateNaming({
       industryAbbr: industry.abbreviation,
       countryAbbr: country.abbreviation,
@@ -106,7 +104,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Auto-create pending QA review
     await prisma.qAReview.create({
       data: { campaignId: campaign.id },
     });

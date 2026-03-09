@@ -19,7 +19,7 @@ const MODEL_MAP: Record<MasterDataCategory, keyof typeof prisma> = {
 // GET: Fetch all master data (or a specific category)
 export async function GET(request: NextRequest) {
   try {
-    const session = await requireAuth();
+    const session = await requireAuth(request);
     if (session instanceof NextResponse) return session;
 
     const { searchParams } = new URL(request.url);
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
 // POST: Create a new item (admin only)
 export async function POST(request: NextRequest) {
   try {
-    const session = await requireAdmin();
+    const session = await requireAdmin(request);
     if (session instanceof NextResponse) return session;
     const body = await request.json();
     const { category, ...data } = body;
@@ -100,7 +100,7 @@ export async function POST(request: NextRequest) {
 // PUT: Update an existing item (admin only)
 export async function PUT(request: NextRequest) {
   try {
-    const session = await requireAdmin();
+    const session = await requireAdmin(request);
     if (session instanceof NextResponse) return session;
     const body = await request.json();
     const { category, id, ...data } = body;
@@ -122,7 +122,7 @@ export async function PUT(request: NextRequest) {
 // DELETE: Remove an item (admin only)
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await requireAdmin();
+    const session = await requireAdmin(request);
     if (session instanceof NextResponse) return session;
 
     const { searchParams } = new URL(request.url);

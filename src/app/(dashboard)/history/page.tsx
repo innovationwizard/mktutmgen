@@ -37,7 +37,10 @@ export default function HistoryPage() {
 
   useEffect(() => {
     fetch("/api/campaigns?include=qa")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error();
+        return r.json();
+      })
       .then(setCampaigns)
       .catch(() => toast.error("Error cargando historial"))
       .finally(() => setLoading(false));
