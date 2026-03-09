@@ -5,22 +5,32 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [totalCampaigns, pendingQA, approvedQA, recentCampaigns] =
-    await Promise.all([
-      prisma.campaign.count(),
-      prisma.qAReview.count({ where: { status: "PENDING" } }),
-      prisma.qAReview.count({ where: { status: "APPROVED" } }),
-      prisma.campaign.findMany({
-        take: 5,
-        orderBy: { createdAt: "desc" },
-        include: {
-          industry: true,
-          brand: true,
-          platform: true,
-          qaReview: true,
-        },
-      }),
-    ]);
+  let totalCampaigns = 0;
+  let pendingQA = 0;
+  let approvedQA = 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let recentCampaigns: any[] = [];
+
+  try {
+    [totalCampaigns, pendingQA, approvedQA, recentCampaigns] =
+      await Promise.all([
+        prisma.campaign.count(),
+        prisma.qAReview.count({ where: { status: "PENDING" } }),
+        prisma.qAReview.count({ where: { status: "APPROVED" } }),
+        prisma.campaign.findMany({
+          take: 5,
+          orderBy: { createdAt: "desc" },
+          include: {
+            industry: true,
+            brand: true,
+            platform: true,
+            qaReview: true,
+          },
+        }),
+      ]);
+  } catch (e) {
+    console.error("Dashboard data error:", e);
+  }
 
   const stats = [
     {
