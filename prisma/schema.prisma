@@ -1,0 +1,286 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────
+// AUTH
+// ─────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  passwordHash  String
+  role          Role      @default(SPECIALIST)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  campaignsCreated  Campaign[]      @relation("CreatedBy")
+  qaReviews         QAReview[]      @relation("ReviewedBy")
+  implementations   QAReview[]      @relation("ImplementedBy")
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  EXPERT
+  SPECIALIST
+}
+
+// ─────────────────────────────────────────────
+// MASTER DATA (admin-editable dropdowns)
+// ─────────────────────────────────────────────
+
+model Industry {
+  id           String     @id @default(cuid())
+  name         String     @unique          // "Retail"
+  abbreviation String     @unique          // "rtil"
+  isActive     Boolean    @default(true)
+  sortOrder    Int        @default(0)
+  campaigns    Campaign[]
+
+  @@map("industries")
+}
+
+model Brand {
+  id           String     @id @default(cuid())
+  name         String                       // "Pradera"
+  abbreviation String                       // "prad"
+  isActive     Boolean    @default(true)
+  sortOrder    Int        @default(0)
+  campaigns    Campaign[]
+
+  @@unique([name, abbreviation])
+  @@map("brands")
+}
+
+model Platform {
+  id           String     @id @default(cuid())
+  name         String     @unique          // "Facebook"
+  abbreviation String     @unique          // "fb"
+  source       String                       // "facebook"  (utm_source default)
+  medium       String     @default("")     // "ads"       (utm_medium default)
+  isActive     Boolean    @default(true)
+  sortOrder    Int        @default(0)
+  campaigns    Campaign[]
+
+  @@map("platforms")
+}
+
+model Country {
+  id           String     @id @default(cuid())
+  name         String     @unique          // "Guatemala"
+  abbreviation String     @unique          // "guat"
+  isActive     Boolean    @default(true)
+  sortOrder    Int        @default(0)
+  campaigns    Campaign[]
+
+  @@map("countries")
+}
+
+model Company {
+  id           String     @id @default(cuid())
+  name         String     @unique          // "Blue Star"
+  abbreviation String     @unique          // "bs"
+  isActive     Boolean    @default(true)
+  sortOrder    Int        @default(0)
+  campaigns    Campaign[]
+
+  @@map("companies")
+}
+
+model AdFormat {
+  id           String     @id @default(cuid())
+  name         String     @unique          // "Conversiones"
+  abbreviation String     @unique          // "conv"
+  isActive     Boolean    @default(true)
+  sortOrder    Int        @default(0)
+  campaigns    Campaign[]
+
+  @@map("ad_formats")
+}
+
+model BuyType {
+  id           String     @id @default(cuid())
+  name         String     @unique          // "Costo por Adquisición"
+  abbreviation String     @unique          // "cpa"
+  isActive     Boolean    @default(true)
+  sortOrder    Int        @default(0)
+  campaigns    Campaign[]
+
+  @@map("buy_types")
+}
+
+model CampaignType {
+  id           String     @id @default(cuid())
+  name         String     @unique          // "Brand"
+  isActive     Boolean    @default(true)
+  sortOrder    Int        @default(0)
+  campaigns    Campaign[]
+
+  @@map("campaign_types")
+}
+
+model SegmentationType {
+  id           String     @id @default(cuid())
+  name         String     @unique          // "intereses"
+  isActive     Boolean    @default(true)
+  sortOrder    Int        @default(0)
+
+  @@map("segmentation_types")
+}
+
+model AdPieceType {
+  id           String     @id @default(cuid())
+  name         String     @unique          // "single", "carrusel", "collection"
+  isActive     Boolean    @default(true)
+  sortOrder    Int        @default(0)
+
+  @@map("ad_piece_types")
+}
+
+// ─────────────────────────────────────────────
+// CAMPAIGN & NAMING
+// ─────────────────────────────────────────────
+
+model Campaign {
+  id                  String        @id @default(cuid())
+
+  // Metadata
+  implementationDate  DateTime?
+  startDate           DateTime?
+  endDate             DateTime?
+
+  // Relationships to master data
+  industryId          String
+  industry            Industry      @relation(fields: [industryId], references: [id])
+  countryId           String
+  country             Country       @relation(fields: [countryId], references: [id])
+  companyId           String
+  company             Company       @relation(fields: [companyId], references: [id])
+  brandId             String
+  brand               Brand         @relation(fields: [brandId], references: [id])
+  platformId          String
+  platform            Platform      @relation(fields: [platformId], references: [id])
+  formatId            String
+  format              AdFormat      @relation(fields: [formatId], references: [id])
+  buyTypeId           String
+  buyType             BuyType       @relation(fields: [buyTypeId], references: [id])
+  campaignTypeId      String?
+  campaignType        CampaignType? @relation(fields: [campaignTypeId], references: [id])
+
+  // Free-text fields
+  campaignName        String                       // "Ejemplo", "navidad", "BackToSchool"
+  dateLabel           String                       // "nov2023", "ao", "1al31dic"
+  segmentation        String        @default("")   // "intereses", "remarketing"
+  pieceType           String        @default("")   // "single", "carrusel"
+  pieceDifferentiator String        @default("")   // "1", "Xela", "Zapatos"
+
+  // Source/Medium overrides
+  utmSourceOverride   String?                      // null = use platform default
+  utmMediumOverride   String?
+
+  // Landing
+  destinationUrl      String        @default("")
+
+  // Auto-generated (computed on save, stored for searchability)
+  namingCampaign      String        @default("")   // "rtil_guat_bs_prad_Ejemplo_fb_conv_cpa_nov2023"
+  namingAdGroup       String        @default("")   // "prad_Ejemplo_nov2023_intereses"
+  namingPiece         String        @default("")   // "prad_nov2023_intereses_singleEjemplo1"
+  utmString           String        @default("")   // full ?utm_source=...
+  fullUrl             String        @default("")   // destinationUrl + utmString
+
+  // Tracking
+  createdById         String
+  createdBy           User          @relation("CreatedBy", fields: [createdById], references: [id])
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  qaReview            QAReview?
+
+  @@index([createdAt])
+  @@index([namingCampaign])
+  @@map("campaigns")
+}
+
+// ─────────────────────────────────────────────
+// QA WORKFLOW
+// ─────────────────────────────────────────────
+
+model QAReview {
+  id                  String        @id @default(cuid())
+  campaignId          String        @unique
+  campaign            Campaign      @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  status              QAStatus      @default(PENDING)
+
+  // ── Platform check ──
+  platformCorrect           QACheck @default(PENDING)
+
+  // ── Campaign-level checks ──
+  campaignNameCorrect       QACheck @default(PENDING)
+  campaignObjectiveCorrect  QACheck @default(PENDING)
+  campaignBudgetMatch       QACheck @default(PENDING)
+  budgetLevel               String  @default("")      // "diaria" | "total"
+  budgetAllocation          String  @default("")
+  campaignObservations      String  @default("")
+
+  // ── Ad Group checks ──
+  adGroupNameCorrect        QACheck @default(PENDING)
+  adGroupStartDate          DateTime?
+  isEvergreen               Boolean @default(false)    // "atemporal"
+  adGroupEndDate             DateTime?
+  eventName                 String  @default("")
+  geoAgeGenderMatch         QACheck @default(PENDING)
+  includedAudiencesMatch    QACheck @default(PENDING)
+  excludedAudiencesMatch    QACheck @default(PENDING)
+  placementScope            String  @default("")       // "ig" | "fb" | "ambas"
+  adGroupObservations       String  @default("")
+
+  // ── Ad-level checks ──
+  adNameCorrect             QACheck @default(PENDING)
+  profilesCorrect           QACheck @default(PENDING)
+  mainCopyApproved          QACheck @default(PENDING)
+  titleCopyApproved         QACheck @default(PENDING)
+  descriptionCopyApproved   QACheck @default(PENDING)
+  ctaValue                  String  @default("")
+  urlMatchesNaming          QACheck @default(PENDING)
+  urlWithUtmWorks           QACheck @default(PENDING)
+  previewLink               String  @default("")
+  trackingEvents            String  @default("")
+  adObservations            String  @default("")
+
+  // ── Responsibility ──
+  implementedById     String?
+  implementedBy       User?         @relation("ImplementedBy", fields: [implementedById], references: [id])
+  implementedAt       DateTime?
+  reviewedById        String?
+  reviewedBy          User?         @relation("ReviewedBy", fields: [reviewedById], references: [id])
+  reviewedAt          DateTime?
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@map("qa_reviews")
+}
+
+enum QAStatus {
+  PENDING        // Pendiente
+  IN_REVIEW      // En revisión
+  APPROVED       // Aprobado
+  REJECTED       // Rechazado
+}
+
+enum QACheck {
+  PENDING
+  OK
+  FAIL
+  NA
+}

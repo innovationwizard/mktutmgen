@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.625rem;
+    --brand: 222 52% 15%;
+    --brand-light: 218 55% 27%;
+
+    --background: 225 33% 97%;
+    --foreground: 222 52% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 52% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 52% 15%;
+
+    --primary: 222 52% 15%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 225 20% 93%;
+    --secondary-foreground: 222 52% 15%;
+
+    --muted: 225 20% 93%;
+    --muted-foreground: 222 10% 45%;
+
+    --accent: 225 20% 93%;
+    --accent-foreground: 222 52% 15%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 222 52% 15%;
+  }
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    @apply bg-surface antialiased;
+    color: hsl(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-orion-200;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-orion-300;
+  }
+}
+
+@layer components {
+  /* Glass card effect */
+  .glass-card {
+    @apply rounded-xl border border-white/60 bg-white/80 shadow-sm backdrop-blur-xl;
+  }
+
+  /* Brand gradient */
+  .brand-gradient {
+    background: linear-gradient(135deg, #0d1d41 0%, #1f3a6b 50%, #0d1d41 100%);
+  }
+
+  /* Subtle grid background */
+  .bg-grid {
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230d1d41' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Code-style box for UTM display */
+  .utm-display {
+    @apply rounded-lg border border-orion-100 bg-orion-50/50 px-4 py-3 font-mono text-sm;
+    word-break: break-all;
+  }
+
+  /* QA status badges */
+  .qa-ok {
+    @apply inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800;
+  }
+
+  .qa-fail {
+    @apply inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800;
+  }
+
+  .qa-pending {
+    @apply inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800;
+  }
+
+  .qa-na {
+    @apply inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500;
+  }
+}
+
+/* Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(13, 29, 65, 0.04) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
