@@ -5,10 +5,9 @@ import { requireAuth } from "@/lib/auth";
 
 // GET: List all campaigns
 export async function GET() {
-  const session = await requireAuth();
-  if (session instanceof NextResponse) return session;
-
   try {
+    const session = await requireAuth();
+    if (session instanceof NextResponse) return session;
     const campaigns = await prisma.campaign.findMany({
       orderBy: { createdAt: "desc" },
       include: {
@@ -33,10 +32,9 @@ export async function GET() {
 
 // POST: Create a new campaign
 export async function POST(request: NextRequest) {
-  const session = await requireAuth();
-  if (session instanceof NextResponse) return session;
-
   try {
+    const session = await requireAuth();
+    if (session instanceof NextResponse) return session;
     const body = await request.json();
 
     // Resolve abbreviations from IDs

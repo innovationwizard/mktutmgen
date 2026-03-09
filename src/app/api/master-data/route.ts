@@ -18,13 +18,12 @@ const MODEL_MAP: Record<MasterDataCategory, keyof typeof prisma> = {
 
 // GET: Fetch all master data (or a specific category)
 export async function GET(request: NextRequest) {
-  const session = await requireAuth();
-  if (session instanceof NextResponse) return session;
-
-  const { searchParams } = new URL(request.url);
-  const category = searchParams.get("category") as MasterDataCategory | null;
-
   try {
+    const session = await requireAuth();
+    if (session instanceof NextResponse) return session;
+
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get("category") as MasterDataCategory | null;
     if (category && MODEL_MAP[category]) {
       const model = prisma[MODEL_MAP[category]] as any;
       const items = await model.findMany({
@@ -78,10 +77,9 @@ export async function GET(request: NextRequest) {
 
 // POST: Create a new item (admin only)
 export async function POST(request: NextRequest) {
-  const session = await requireAdmin();
-  if (session instanceof NextResponse) return session;
-
   try {
+    const session = await requireAdmin();
+    if (session instanceof NextResponse) return session;
     const body = await request.json();
     const { category, ...data } = body;
 
@@ -101,10 +99,9 @@ export async function POST(request: NextRequest) {
 
 // PUT: Update an existing item (admin only)
 export async function PUT(request: NextRequest) {
-  const session = await requireAdmin();
-  if (session instanceof NextResponse) return session;
-
   try {
+    const session = await requireAdmin();
+    if (session instanceof NextResponse) return session;
     const body = await request.json();
     const { category, id, ...data } = body;
 
@@ -124,18 +121,17 @@ export async function PUT(request: NextRequest) {
 
 // DELETE: Remove an item (admin only)
 export async function DELETE(request: NextRequest) {
-  const session = await requireAdmin();
-  if (session instanceof NextResponse) return session;
-
-  const { searchParams } = new URL(request.url);
-  const category = searchParams.get("category") as MasterDataCategory | null;
-  const id = searchParams.get("id");
-
-  if (!category || !MODEL_MAP[category] || !id) {
-    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  }
-
   try {
+    const session = await requireAdmin();
+    if (session instanceof NextResponse) return session;
+
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get("category") as MasterDataCategory | null;
+    const id = searchParams.get("id");
+
+    if (!category || !MODEL_MAP[category] || !id) {
+      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+    }
     const model = prisma[MODEL_MAP[category]] as any;
     await model.delete({ where: { id } });
     return NextResponse.json({ success: true });

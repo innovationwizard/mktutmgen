@@ -4,10 +4,9 @@ import { requireAuth } from "@/lib/auth";
 import { compare, hash } from "bcryptjs";
 
 export async function POST(request: NextRequest) {
-  const session = await requireAuth();
-  if (session instanceof NextResponse) return session;
-
   try {
+    const session = await requireAuth();
+    if (session instanceof NextResponse) return session;
     const { currentPassword, newPassword } = await request.json();
 
     if (!currentPassword || !newPassword) {

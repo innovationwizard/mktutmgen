@@ -71,7 +71,10 @@ export default function GeneratorPage() {
   // Load master data
   useEffect(() => {
     fetch("/api/master-data")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error();
+        return r.json();
+      })
       .then(setMasterData)
       .catch(() => toast.error("Error cargando datos maestros"))
       .finally(() => setLoading(false));

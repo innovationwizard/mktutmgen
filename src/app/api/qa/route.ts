@@ -4,10 +4,9 @@ import { requireAuth } from "@/lib/auth";
 
 // POST: Create or update a QA review
 export async function POST(request: NextRequest) {
-  const session = await requireAuth();
-  if (session instanceof NextResponse) return session;
-
   try {
+    const session = await requireAuth();
+    if (session instanceof NextResponse) return session;
     const body = await request.json();
     const { campaignId, ...qaData } = body;
 
@@ -62,20 +61,19 @@ export async function POST(request: NextRequest) {
 
 // GET: Fetch QA review for a specific campaign
 export async function GET(request: NextRequest) {
-  const session = await requireAuth();
-  if (session instanceof NextResponse) return session;
-
-  const { searchParams } = new URL(request.url);
-  const campaignId = searchParams.get("campaignId");
-
-  if (!campaignId) {
-    return NextResponse.json(
-      { error: "campaignId is required" },
-      { status: 400 }
-    );
-  }
-
   try {
+    const session = await requireAuth();
+    if (session instanceof NextResponse) return session;
+
+    const { searchParams } = new URL(request.url);
+    const campaignId = searchParams.get("campaignId");
+
+    if (!campaignId) {
+      return NextResponse.json(
+        { error: "campaignId is required" },
+        { status: 400 }
+      );
+    }
     const review = await prisma.qAReview.findUnique({
       where: { campaignId },
       include: {
