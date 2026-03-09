@@ -22,9 +22,10 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
+        const input = credentials.email.trim();
+        const user = input.includes("@")
+          ? await prisma.user.findUnique({ where: { email: input } })
+          : await prisma.user.findFirst({ where: { name: { equals: input, mode: "insensitive" } } });
 
         if (!user) return null;
 

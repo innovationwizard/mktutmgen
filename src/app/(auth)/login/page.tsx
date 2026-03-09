@@ -76,7 +76,7 @@ export default function LoginPage() {
               Iniciar sesión
             </h2>
             <p className="mt-1 text-sm text-orion-400">
-              Ingresa tus credenciales para continuar
+              Ingresa tu usuario y contraseña para continuar
             </p>
           </div>
 
@@ -86,17 +86,17 @@ export default function LoginPage() {
                 htmlFor="email"
                 className="mb-1.5 block text-sm font-medium text-orion-700"
               >
-                Correo electrónico
+                Usuario
               </label>
               <input
                 id="email"
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                autoComplete="email"
+                autoComplete="username"
                 className="w-full rounded-lg border border-orion-100 bg-white px-4 py-2.5 text-sm text-orion-900 outline-none transition-all placeholder:text-orion-300 focus:border-orion-400 focus:ring-2 focus:ring-orion-100"
-                placeholder="tu@email.com"
+                placeholder="tu usuario"
               />
             </div>
 
