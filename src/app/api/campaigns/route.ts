@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
         buyType: true,
         campaignType: true,
         qaReview: true,
+        createdBy: { select: { name: true, email: true } },
       },
     });
 

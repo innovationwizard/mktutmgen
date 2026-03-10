@@ -45,6 +45,8 @@ export default function GeneratorPage() {
   const [masterData, setMasterData] = useState<MasterData | null>(null);
   const [loading, setLoading] = useState(true);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   // Form state
   const [form, setForm] = useState({
@@ -130,6 +132,7 @@ export default function GeneratorPage() {
   // Handlers
   function updateField(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
+    setSavedId(null); // Mark as unsaved on any change
   }
 
   function resetForm() {
@@ -152,20 +155,14 @@ export default function GeneratorPage() {
       startDate: "",
       endDate: "",
     });
+    setSavedId(null);
   }
 
-  async function handleCopy(text: string, field: string) {
-    const ok = await copyToClipboard(text);
-    if (ok) {
-      setCopiedField(field);
-      toast.success("Copiado al portapapeles");
-      setTimeout(() => setCopiedField(null), 2000);
-    }
-  }
+  // Persist campaign to DB, returns true on success
+  async function persistCampaign(): Promise<boolean> {
+    if (savedId || !naming || saving) return !!savedId;
 
-  async function handleSave() {
-    if (!naming) return;
-
+    setSaving(true);
     try {
       const res = await fetch("/api/campaigns", {
         method: "POST",
@@ -175,10 +172,36 @@ export default function GeneratorPage() {
 
       if (!res.ok) throw new Error();
 
-      toast.success("Campaña guardada exitosamente");
+      const data = await res.json();
+      setSavedId(data.id);
+      return true;
     } catch {
       toast.error("Error al guardar la campaña");
+      return false;
+    } finally {
+      setSaving(false);
     }
+  }
+
+  async function handleCopy(text: string, field: string) {
+    // Auto-persist on copy if form is valid
+    if (!savedId && issues.length === 0 && naming) {
+      const ok = await persistCampaign();
+      if (ok) toast.success("Marcación guardada y copiada");
+    }
+
+    const copied = await copyToClipboard(text);
+    if (copied) {
+      setCopiedField(field);
+      if (savedId) toast.success("Copiado al portapapeles");
+      setTimeout(() => setCopiedField(null), 2000);
+    }
+  }
+
+  async function handleSave() {
+    if (!naming) return;
+    const ok = await persistCampaign();
+    if (ok) toast.success("Campaña guardada exitosamente");
   }
 
   // Auto-fill source/medium when platform changes
@@ -227,11 +250,26 @@ export default function GeneratorPage() {
           </button>
           <button
             onClick={handleSave}
-            disabled={issues.length > 0}
-            className="brand-gradient inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-orion-900/20 transition-all hover:shadow-xl disabled:opacity-50"
+            disabled={issues.length > 0 || !!savedId || saving}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold shadow-lg transition-all hover:shadow-xl disabled:opacity-50 ${
+              savedId
+                ? "border border-emerald-200 bg-emerald-50 text-emerald-700 shadow-none"
+                : "brand-gradient text-white shadow-orion-900/20"
+            }`}
           >
-            <Plus className="h-4 w-4" />
-            Guardar
+            {savedId ? (
+              <>
+                <Check className="h-4 w-4" />
+                Guardada
+              </>
+            ) : saving ? (
+              "Guardando..."
+            ) : (
+              <>
+                <Plus className="h-4 w-4" />
+                Guardar
+              </>
+            )}
           </button>
         </div>
       </div>
